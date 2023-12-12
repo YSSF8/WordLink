@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordLink</title>
+    <link rel="stylesheet" href="./style/style.css">
+    <link rel="shortcut icon" href="./icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+</head>
+<body>
+    <div class="meters">
+        <div class="stats">
+            <div class="bot-meter">
+                <div class="value">00</div>
+                <div class="bar">
+                    <div class="percentage"></div>
+                </div>
+            </div>
+            <span>50</span>
+            <div class="user-meter">
+                <div class="bar">
+                    <div class="percentage"></div>
+                </div>
+                <div class="value">00</div>
+            </div>
+        </div>
+        <div class="timer">
+            <div class="bar timebar">
+                <div class="percentage"></div>
+                <div class="time">15.0</div>
+            </div>
+        </div>
+        <div class="current-difficulty">Difficulty: Unselected</div>
+        <div class="letter-info">Write a word that starts with the letter: ?</div>
+    </div>
+    <div class="message-history"></div>
+    <div class="message-zone">
+        <input type="text" placeholder="Word" id="message-input" spellcheck="false">
+        <button role="button" id="send-message"><span class="material-symbols-outlined">send</span></button>
+    </div>
+    <div class="main-menu scene">
+        <h1>WordLink</h1>
+        <div class="scene-buttons">
+            <button role="button" id="start">Play</button>
+            <a href="https://github.com/YSSF8/WordLink" target="_blank"><button role="button" id="how-to-play">How to play</button></a>
+        </div>
+    </div>
+    <script src="./script.js"></script>
+</body>
+</html>
