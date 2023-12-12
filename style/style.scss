@@ -147,7 +147,7 @@ body {
 @keyframes showMessage {
     from {
         opacity: 0;
-        transform: scale(.9);
+        transform: scale(.8);
     }
 
     to {
@@ -266,6 +266,13 @@ button {
         flex-direction: column;
         gap: calc(var(--common-px) / 2);
     }
+}
+
+.fake-anchor {
+    color: var(--text-color);
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 ::-webkit-scrollbar {

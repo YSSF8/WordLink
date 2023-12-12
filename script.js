@@ -18,7 +18,7 @@ const start = document.getElementById('start');
 messageHistory.style.paddingTop = `${userMeter.closest('.meters').offsetHeight + 8}px`;
 
 messageInput.addEventListener('input', () => {
-    messageInput.value = messageInput.value.replace(/[^a-zA-Z]/, '').replace(/^./, match => match.toUpperCase());
+    messageInput.value = messageInput.value.replace(/[^a-zA-Zé]/, '').replace(/^./, match => match.toUpperCase());
 });
 
 const MAX_SCORE = 50;
@@ -34,18 +34,30 @@ let chosenLetter = String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1))
 letterInfo.innerHTML = letterInfo.innerHTML.replace('?', chosenLetter);
 
 sendMessage.addEventListener('click', () => {
+    let rotationLevel = 0;
     if (messageInput.value.trim() == '') return;
     sendMessage.setAttribute('disabled', '');
     clearInterval(timerId);
 
+    let rotationId = setInterval(() => {
+        rotationLevel++;
+        sendMessage.innerHTML = '<span class="material-symbols-outlined">refresh</span>';
+        const sendIcon = sendMessage.querySelector('span');
+        sendIcon.style.transform = `rotate(${rotationLevel}deg)`;
+    });
+
     fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${messageInput.value}`)
-    .then(res => {
-        if (!res.ok) {
-                sendNewMessage('Unknown word, Try again with a different word!', true);
-                smoothScroll();
-                startTimer();
-                sendMessage.removeAttribute('disabled');
-                throw new Error('Unknown word');
+        .then(res => {
+            if (!res.ok) {
+                if (res.status === 404) {
+                    sendNewMessage('Unknown word. Try again with a different word!', true);
+                    smoothScroll();
+                    startTimer();
+                    sendMessage.removeAttribute('disabled');
+                    throw new Error('Unknown word');
+                } else {
+                    throw new Error('HTTP error! status: ' + res.status);
+                }
             }
             return res.json();
         })
@@ -72,7 +84,7 @@ sendMessage.addEventListener('click', () => {
                 sendMessage.removeAttribute('disabled');
                 return;
             }
-            
+
             startTimer();
             sendNewMessage(messageInput.value);
             let lastLetter = messageInput.value.charAt(messageInput.value.length - 1);
@@ -83,17 +95,31 @@ sendMessage.addEventListener('click', () => {
             userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
             userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
             playerScore >= MAX_SCORE ? winningScene('player') : undefined;
-            
+
             timeout = 0;
-            
+
             let timeoutId = setInterval(() => {
                 timeout++;
                 if (timeout >= 3) clearInterval(timeoutId);
             }, 300);
-            
+
             setTimeout(() => {
                 messageInput.value = '';
                 timer = defaultTimer;
+            });
+        })
+        .catch(error => {
+            if (error.message != 'Unknown word') {
+                sendNewMessage(`An error occurred: ${error.message}.<br>You have to <span onclick="location.reload();" class="fake-anchor">refresh</span> the page to play again.`, true);
+            }
+        })
+        .finally(() => {
+            setTimeout(() => {
+                rotationLevel = 0;
+                sendMessage.innerHTML = '<span class="material-symbols-outlined">send</span>';
+                const sendIcon = sendMessage.querySelector('span');
+                sendIcon.style.removeProperty('transform');
+                clearInterval(rotationId);
             });
         });
 });
@@ -129,9 +155,9 @@ function findWordStartingWith(letter) {
     if (difficulty == 'easy') {
         url = originalUrl + random(3, 5);
     } else if (difficulty == 'hard') {
-        url = originalUrl + random(10, 14);
+        url = originalUrl + random(10, 13);
     } else if (difficulty == 'expert') {
-        url = originalUrl + random(14, 20);
+        url = originalUrl + random(13, 16);
     } else {
         url = originalUrl + random();
     }
@@ -256,8 +282,8 @@ start.addEventListener('click', () => {
     <div class="scene-buttons">
         <button role="button" data-difficulty="easy" title="The bot will reply with words consisting of 3 to 5 letters">Easy</button>
         <button role="button" data-difficulty="medium" title="The bot will reply with words consisting of 7 to 10 letters">Medium</button>
-        <button role="button" data-difficulty="hard" title="The bot will reply with words consisting of 10 to 14 letters">Hard</button>
-        <button role="button" data-difficulty="expert" title="The bot will reply with words consisting of 14 to 20 letters">Expert</button>
+        <button role="button" data-difficulty="hard" title="The bot will reply with words consisting of 10 to 13 letters">Hard</button>
+        <button role="button" data-difficulty="expert" title="The bot will reply with words consisting of 13 to 16 letters">Expert</button>
     </div>
     `;
     difficultySelection.classList.add('scene');
