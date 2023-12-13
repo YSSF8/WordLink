@@ -33,6 +33,27 @@ body {
     padding: 0;
 }
 
+.coins {
+    position: fixed;
+    left: var(--common-px);
+    top: var(--common-px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--common-px);
+    background-color: var(--transparent);
+    padding: var(--common-px);
+    display: flex;
+    gap: var(--common-px);
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 4;
+    transition: opacity 200ms;
+
+    &:hover {
+        opacity: .8;
+    }
+}
+
 .meters {
     display: flex;
     flex-direction: column;
@@ -91,6 +112,13 @@ body {
                 transform: translate(-50%, -50%);
             }
         }
+    }
+
+    .bought-items {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: calc(var(--common-px) / 3);
     }
 }
 
@@ -164,7 +192,7 @@ body {
     gap: calc(var(--common-px) - 6px);
     height: calc(var(--common-px) * 6);
     background-color: var(--first-background);
-    
+
     &::before {
         content: '';
         position: absolute;
@@ -240,11 +268,42 @@ button {
     0% {
         opacity: 0;
     }
+
     50% {
         opacity: 1;
     }
+
     100% {
         opacity: 0;
+    }
+}
+
+.keyboard {
+    display: none;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+    max-width: 500px;
+    position: fixed;
+    background-color: var(--first-background);
+    bottom: 0;
+    padding: var(--common-px);
+
+    .key {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+        background-color: var(--second-background);
+        border: 1px solid var(--border-color);
+        border-radius: calc(var(--common-px) / 2);
+        width: 2rem;
+        height: 2rem;
+        cursor: pointer;
+        transition: background 200ms;
+    
+        &:hover {
+            background-color: var(--third-background);
+        }
     }
 }
 
@@ -268,6 +327,82 @@ button {
     }
 }
 
+.store {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    background-color: var(--second-background);
+    border-radius: var(--common-px);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    animation: popup 200ms linear forwards;
+    z-index: 2;
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        padding-left: var(--common-px);
+        cursor: default;
+
+        .title {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--common-px) / 2);
+        }
+
+        .close {
+            padding: var(--common-px);
+            user-select: none;
+            transition: background 200ms;
+
+            &:hover {
+                background-color: rgb(139, 31, 31);
+            }
+        }
+    }
+
+    .content {
+        display: flex;
+        flex-wrap: wrap;
+        width: 3.75in;
+        overflow: auto;
+        padding: var(--common-px);
+        gap: calc(var(--common-px) / 2);
+
+        .item {
+            border: 1px solid var(--border-color);
+            border-radius: var(--common-px);
+            padding: calc(var(--common-px) * 2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 1.5in;
+            cursor: pointer;
+            transition: 200ms;
+            transition-property: background, transform;
+
+            &:hover {
+                background-color: var(--third-background);
+                transform: translateY(-2px);
+            }
+        }
+    }
+}
+
+@keyframes popup {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.7);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
 .fake-anchor {
     color: var(--text-color);
     font-weight: bold;
@@ -285,5 +420,20 @@ button {
 
     &:hover {
         background-color: var(--third-background);
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .meters {
+        width: 3.8in;
+    }
+
+    .coins {
+        top: 3.2rem;
+        left: calc(var(--common-px) * 2);
+    }
+
+    .keyboard {
+        display: grid;
     }
 }

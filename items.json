@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Hint",
+        "description": "Get a hint when you are stuck whenever you want",
+        "bought": "localStorage.getItem('hint') || 0",
+        "image": "./assets/hint.png",
+        "price": 200
+    },
+    {
+        "name": "Half Points",
+        "description": "Shifts the competitor's points to their own half",
+        "bought": "localStorage.getItem('halfPoints') || 0",
+        "image": "./assets/half-points.png",
+        "price": 2500
+    },
+    {
+        "name": "Double Points",
+        "description": "Double the points earned",
+        "bought": "localStorage.getItem('doublePoints') || 0",
+        "image": "./assets/double-points.png",
+        "price": 2600
+    },
+    {
+        "name": "Change Letter",
+        "description": "Change the letter to the preferred letter",
+        "bought": "localStorage.getItem('changeLetter') || 0",
+        "image": "./assets/change-letter.png",
+        "price": 2400
+    }
+]

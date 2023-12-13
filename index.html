@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WordLink</title>
     <link rel="stylesheet" href="./style/style.css">
-    <link rel="shortcut icon" href="./icon.png" type="image/x-icon">
+    <link rel="shortcut icon" href="./assets/icon.png" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
 </head>
 <body>
+    <div class="coins">
+        <img src="./assets/coin.png" height="30" draggable="false" alt="">
+        <div id="coin-counter">0</div>
+    </div>
     <div class="meters">
         <div class="stats">
             <div class="bot-meter">
@@ -17,7 +21,7 @@
                     <div class="percentage"></div>
                 </div>
             </div>
-            <span>50</span>
+            <span>70</span>
             <div class="user-meter">
                 <div class="bar">
                     <div class="percentage"></div>
@@ -33,11 +37,47 @@
         </div>
         <div class="current-difficulty">Difficulty: Unselected</div>
         <div class="letter-info">Write a word that starts with the letter: ?</div>
+        <div class="bought-items">
+            <button role="button" data-saved="hint" disabled>Hint: ?</button>
+            <button role="button" data-saved="halfPoints" disabled>Half Points: ?</button>
+            <button role="button" data-saved="doublePoints" disabled>Double Points: ?</button>
+            <button role="button" data-saved="changeLetter" disabled>Change Letter: ?</button>
+        </div>
     </div>
     <div class="message-history"></div>
     <div class="message-zone">
         <input type="text" placeholder="Word" id="message-input" spellcheck="false">
         <button role="button" id="send-message"><span class="material-symbols-outlined">send</span></button>
+    </div>
+    <div class="keyboard">
+        <div class="key">Q</div>
+        <div class="key">W</div>
+        <div class="key">E</div>
+        <div class="key">R</div>
+        <div class="key">T</div>
+        <div class="key">Y</div>
+        <div class="key">U</div>
+        <div class="key">I</div>
+        <div class="key">O</div>
+        <div class="key">P</div>
+        <div class="key">A</div>
+        <div class="key">S</div>
+        <div class="key">D</div>
+        <div class="key">F</div>
+        <div class="key">G</div>
+        <div class="key">H</div>
+        <div class="key">J</div>
+        <div class="key">K</div>
+        <div class="key">L</div>
+        <div class="key">Z</div>
+        <div class="key">X</div>
+        <div class="key">C</div>
+        <div class="key">V</div>
+        <div class="key">B</div>
+        <div class="key">N</div>
+        <div class="key">M</div>
+        <div class="key">É</div>
+        <div class="key"><span class="material-symbols-outlined">backspace</span></div>
     </div>
     <div class="main-menu scene">
         <h1>WordLink</h1>
