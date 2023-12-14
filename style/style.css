@@ -109,6 +109,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: calc(var(--common-px) / 3);
+  max-width: 4in;
 }
 
 .message-history {
@@ -304,6 +305,31 @@ button:is(input):focus {
   gap: calc(var(--common-px) / 2);
 }
 
+.revive-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.revive-container .revive-price {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--common-px);
+  gap: calc(var(--common-px) / 2);
+}
+.revive-container .revive-meter {
+  width: 2.5in;
+  height: 1rem;
+  margin-bottom: var(--common-px);
+  border-radius: calc(var(--common-px) / 2);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+.revive-container .revive-meter .bar {
+  background-color: var(--accent-color);
+  height: 100%;
+  width: 100%;
+}
+
 .store {
   position: fixed;
   left: 50%;
@@ -311,6 +337,7 @@ button:is(input):focus {
   background-color: var(--second-background);
   border-radius: var(--common-px);
   border: 1px solid var(--border-color);
+  box-shadow: 0 0 6px 2px var(--transparent);
   overflow: hidden;
   animation: popup 200ms linear forwards;
   z-index: 2;
@@ -341,7 +368,8 @@ button:is(input):focus {
 .store .content {
   display: flex;
   flex-wrap: wrap;
-  width: 3.75in;
+  width: 3.85in;
+  max-height: 4in;
   overflow: auto;
   padding: var(--common-px);
   gap: calc(var(--common-px) / 2);
@@ -361,6 +389,9 @@ button:is(input):focus {
 .store .content .item:hover {
   background-color: var(--third-background);
   transform: translateY(-2px);
+}
+.store .content::-webkit-scrollbar-thumb {
+  background-color: var(--first-background);
 }
 
 @keyframes popup {
@@ -394,11 +425,15 @@ button:is(input):focus {
 
 @media screen and (max-width: 600px) {
   .meters {
-    width: 3.8in;
+    width: 3.7in;
+  }
+  .meters .user-meter .bar,
+  .meters .bot-meter .bar {
+    width: 1.3in;
   }
   .coins {
     top: 3.2rem;
-    left: calc(var(--common-px) * 2);
+    left: calc(var(--common-px) * 2.4);
   }
   .keyboard {
     display: grid;

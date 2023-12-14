@@ -1,7 +1,7 @@
 [
     {
         "name": "Hint",
-        "description": "Get a hint when you are stuck whenever you want",
+        "description": "Receive a hint whenever you encounter difficulties",
         "bought": "localStorage.getItem('hint') || 0",
         "image": "./assets/hint.png",
         "price": 200
@@ -11,20 +11,27 @@
         "description": "Shifts the competitor's points to their own half",
         "bought": "localStorage.getItem('halfPoints') || 0",
         "image": "./assets/half-points.png",
-        "price": 2500
+        "price": 3000
     },
     {
         "name": "Double Points",
-        "description": "Double the points earned",
+        "description": "Increase your earned points twofold",
         "bought": "localStorage.getItem('doublePoints') || 0",
         "image": "./assets/double-points.png",
-        "price": 2600
+        "price": 5000
     },
     {
         "name": "Change Letter",
-        "description": "Change the letter to the preferred letter",
+        "description": "Swap the letter by another random letter",
         "bought": "localStorage.getItem('changeLetter') || 0",
         "image": "./assets/change-letter.png",
         "price": 2400
+    },
+    {
+        "name": "Preferred Letter",
+        "description": "Swap the letter by a preferred letter",
+        "bought": "localStorage.getItem('preferredLetter') || 0",
+        "image": "./assets/preferred-letter.png",
+        "price": 2700
     }
 ]

@@ -16,6 +16,7 @@ const mainMenu = document.querySelector('.main-menu');
 const start = document.getElementById('start');
 const coinCounter = document.getElementById('coin-counter');
 const keyboard = document.querySelector('.keyboard');
+const boughtItems = document.querySelectorAll('.bought-items button');
 
 function fixMessageHistoryPadding() {
     messageHistory.style.paddingTop = `${userMeter.closest('.meters').offsetHeight + 8}px`;
@@ -80,7 +81,7 @@ let earnings = {
 }
 letterInfo.innerHTML = letterInfo.innerHTML.replace('?', chosenLetter);
 
-document.querySelectorAll('.bought-items button').forEach(btn => {
+boughtItems.forEach(btn => {
     let savedItemValue = localStorage.getItem(btn.getAttribute('data-saved'));
 
     if (savedItemValue !== null && !isNaN(savedItemValue)) {
@@ -88,12 +89,12 @@ document.querySelectorAll('.bought-items button').forEach(btn => {
 
         btn.addEventListener('click', () => {
             let savedItem = parseInt(localStorage.getItem(btn.getAttribute('data-saved')));
-            
+
             if (savedItem > 0) {
                 savedItem--;
                 localStorage.setItem(btn.getAttribute('data-saved'), savedItem);
                 btn.innerHTML = btn.innerHTML.replace(/\d+/, savedItem);
-                
+
                 switch (btn.getAttribute('data-saved')) {
                     case 'hint':
                         btn.setAttribute('disabled', '');
@@ -129,57 +130,76 @@ document.querySelectorAll('.bought-items button').forEach(btn => {
                         });
                         break;
                     case 'halfPoints':
-                        pointManager('/', 'bot');
+                        pointManager('/');
                         break;
                     case 'doublePoints':
-                        pointManager('*', 'player');
+                        pointManager('*');
                         break;
                     case 'changeLetter':
                         changeLetter(String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1)) + 65));
+                        break;
+                    case 'preferredLetter':
+                        let previousLetter = chosenLetter;
+                        let newLetter = prompt('Input your preferred letter').toUpperCase().trim();
+                        let firstLetter = newLetter.charAt(0);
+                        if (firstLetter.match(/[^a-zA-ZéÉ]/) || firstLetter.trim() == '') {
+                            alert('Input a correct character');
+                            incorrectLetter = previousLetter;
+                        } else {
+                            incorrectLetter = firstLetter;
+                        }
+                        changeLetter(incorrectLetter);
                         break;
                     default:
                         sendNewMessage('An error occurred: Couldn\'t operate the item', true);
                 }
             }
 
-            async function hint(beginning = '') {
-                try {
-                    let response = await fetch(`https://random-word-api.herokuapp.com/word?number=100&length=${Math.floor(Math.random() * (10 - 7 + 1)) + 7}`);
-                    if (!response.ok) {
-                        sendNewMessage(`Error fetching: ${response.status}`);
-                        return;
-                    }
-                    clearInterval(timerId);
-                    let words = await response.json();
-                    let filteredWords = words.filter(word => word.toUpperCase().startsWith(beginning.toUpperCase()));
-                    if (filteredWords.length >= 3) {
-                        let promises = filteredWords.slice(0, 3).map(word => fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`));
-                        let responses = await Promise.all(promises);
-                        let hints = responses.filter(response => response.ok).map((response, index) => filteredWords[index]);
-                        if (hints.length >= 3) {
-                            startTimer();
-                            return hints;
+            async function hint(beginning = '', retries = 3) {
+                while (retries) {
+                    try {
+                        let response = await fetch(`https://random-word-api.herokuapp.com/word?number=100&length=${Math.floor(Math.random() * (10 - 7 + 1)) + 7}`);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        clearInterval(timerId);
+                        let words = await response.json();
+                        let filteredWords = words.filter(word => word.toUpperCase().startsWith(beginning.toUpperCase()));
+                        if (filteredWords.length >= 3) {
+                            let promises = filteredWords.slice(0, 3).map(word => fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`));
+                            let responses = await Promise.all(promises);
+                            let hints = responses.filter(response => response.ok).map((response, index) => filteredWords[index]);
+                            if (hints.length >= 3) {
+                                startTimer();
+                                return hints;
+                            } else {
+                                return hint(beginning);
+                            }
                         } else {
                             return hint(beginning);
                         }
-                    } else {
-                        return hint(beginning);
+                    } catch (error) {
+                        if (error.message === 'net::ERR_NETWORK_CHANGED' && retries > 0) {
+                            retries--;
+                            console.log(`Retrying... Attempts left: ${retries}`);
+                        } else {
+                            sendNewMessage(`An error occurred: ${error.message}`, true);
+                            break;
+                        }
                     }
-                } catch (error) {
-                    sendNewMessage(`An error occurred: ${error.message}`, true);
                 }
             }
 
-            function pointManager(operator, agent) {
+            function pointManager(operator) {
                 if (operator == '/') {
                     botScore = Math.floor(botScore / 2);
-                    botMeterValue.innerHTML = botScore;
+                    botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
                     botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
                 } else if (operator == '*') {
                     playerScore = playerScore * 2;
-                    userMeterValue.innerHTML = playerScore;
+                    userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
                     userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
-                    playerScore >= MAX_SCORE ? winningScene('plater') : undefined;
+                    playerScore >= MAX_SCORE ? winningScene('player') : undefined;
                 }
             }
 
@@ -271,7 +291,7 @@ sendMessage.addEventListener('click', () => {
         })
         .catch(error => {
             if (error.message != 'Unknown word') {
-                sendNewMessage(`An error occurred: ${error.message}.<br>You have to <span onclick="location.reload();" class="fake-anchor">refresh</span> the page to play again.`, true);
+                sendNewMessage(`An error occurred: ${error.message}.<br>You have to <span onclick="location.reload();" class="fake-anchor">refresh</span> the page to continue again.`, true);
             }
         })
         .finally(() => {
@@ -373,16 +393,12 @@ function fixScrolling() {
             message.removeAttribute('style');
         });
 
-        if (messageHistory.lastElementChild) {
-            if (window.matchMedia('(max-width: 600px)').matches) {
-                messageHistory.lastElementChild.style.marginBottom = `${keyboard.offsetHeight + messageZone.offsetHeight + 27}px`;
-            } else {
-                messageHistory.lastElementChild.style.marginBottom = '1in';
-            }
+        if (window.matchMedia('(max-width: 600px)').matches) {
+            messageHistory.style.paddingBottom = `${keyboard.offsetHeight + messageZone.offsetHeight + 20}px`;
+        } else {
+            messageHistory.style.paddingBottom = '1in';
         }
     }
-
-    requestAnimationFrame(fixScrolling);
 }
 
 fixScrolling();
@@ -422,6 +438,19 @@ function winningScene(agent = '') {
         <button role="button" class="replay">Replay</button>
         <button role="button" class="menu">Main Menu</button>
     </div>
+    ${agent == 'bot' ? `
+    <div class="revive-container">
+        <h3>Revive?</h3>
+        <div class="revive-price">
+            <img src="./assets/coin.png" height="30" draggable="false" alt="">
+            <div>250</div>
+        </div>
+        <div class="revive-meter">
+            <div class="bar"></div>
+        </div>
+        <button role="button" class="revive">Revive</button>
+    </div>
+    ` : ''}
     `;
     won.classList.add('scene');
     document.body.appendChild(won);
@@ -458,6 +487,39 @@ function winningScene(agent = '') {
 
     won.querySelector('.menu').addEventListener('click', () => location.reload());
 
+    boughtItems.forEach(btn => btn.setAttribute('disabled', ''));
+
+    const reviveBtn = won.querySelector('.revive');
+    if (reviveBtn) {
+        let price = parseInt(won.querySelector('.revive-price div').innerHTML);
+
+        reviveBtn.addEventListener('click', () => {
+            if (coins <= price) return;
+
+            won.remove();
+            timer = defaultTimer;
+            startTimer();
+            boughtItems.forEach(btn => btn.removeAttribute('disabled'));
+            botScore -= Math.floor(MAX_SCORE / 2);
+            botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
+            botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
+            coins -= price;
+            localStorage.setItem('coins', coins);
+            coinCounter.innerHTML = coins;
+        });
+
+        let reviveTimeout = 100;
+        let reviveId = setInterval(() => {
+            reviveTimeout--;
+            won.querySelector('.revive-meter .bar').style.width = `${reviveTimeout}%`;
+
+            if (reviveTimeout <= 0) {
+                won.querySelector('.revive-container').remove();
+                clearInterval(reviveId);
+            }
+        }, 100);
+    }
+
     messageInput.blur();
     clearInterval(timerId);
 }
@@ -486,7 +548,7 @@ start.addEventListener('click', () => {
             currentDifficulty.innerHTML = currentDifficulty.innerHTML.replace('Unselected', btn.getAttribute('data-difficulty').replace(/^./, match => match.toUpperCase()));
             difficultySelection.remove();
 
-            document.querySelectorAll('.bought-items button').forEach(btn => btn.removeAttribute('disabled'));
+            boughtItems.forEach(btn => btn.removeAttribute('disabled'));
         });
     });
 });
@@ -497,7 +559,7 @@ if (localStorage.getItem('replay')) {
     messageInput.focus();
     difficulty = localStorage.getItem('difficulty');
     currentDifficulty.innerHTML = currentDifficulty.innerHTML.replace('Unselected', difficulty.replace(/^./, match => match.toUpperCase()));
-    document.querySelectorAll('.bought-items button').forEach(btn => btn.removeAttribute('disabled'));
+    boughtItems.forEach(btn => btn.removeAttribute('disabled'));
     localStorage.removeItem('difficulty');
     localStorage.removeItem('replay');
 }
@@ -531,9 +593,10 @@ coinCounter.closest('.coins').addEventListener('click', () => {
         .then(res => res.json())
         .then(items => {
             let itemHTML = '';
-            for (let item of items) {
+            for (let item of items.sort((a, b) => a.price - b.price)) {
+                let itemId = item.bought.match(/'(.*?)'/)[1];
                 itemHTML += `
-                <div class="item" title="${item.description}" data-price="${item.price}" data-bought="${eval(item.bought)}" id="${item.name.toLowerCase().replace(' ', '-')}">
+                <div class="item" title="${item.description}" data-price="${item.price}" data-bought="${eval(item.bought)}" data-item-id="${itemId}" id="${item.name.toLowerCase().replace(' ', '-')}">
                     <img src="${item.image}" height="120" draggable="false" alt="">
                     <div>${item.name}</div>
                     <sup style="color: #d9d9d9;">$${item.price}</sup>
@@ -558,27 +621,35 @@ coinCounter.closest('.coins').addEventListener('click', () => {
 
                     switch (item.id) {
                         case 'hint':
-                            let hintCount = parseInt(localStorage.getItem('hint') || '0');
-                            hintCount++;
-                            localStorage.setItem('hint', hintCount.toString());
+                            updateProperty('hint');
                             break;
                         case 'half-points':
-                            let halfPointsCount = parseInt(localStorage.getItem('halfPoints') || '0');
-                            halfPointsCount++;
-                            localStorage.setItem('halfPoints', halfPointsCount.toString());
+                            updateProperty('halfPoints');
                             break;
                         case 'double-points':
-                            let doublePointsCount = parseInt(localStorage.getItem('doublePoints') || '0');
-                            doublePointsCount++;
-                            localStorage.setItem('doublePoints', doublePointsCount.toString());
+                            updateProperty('doublePoints');
                             break;
                         case 'change-letter':
-                            let changeLetterCount = parseInt(localStorage.getItem('changeLetter') || '0');
-                            changeLetterCount++;
-                            localStorage.setItem('changeLetter', changeLetterCount.toString());
+                            updateProperty('changeLetter');
+                            break;
+                        case 'preferred-letter':
+                            updateProperty('preferredLetter');
                             break;
                         default:
                             alert('An error occurred: Purchase is not successful');
+                    }
+
+                    function updateProperty(key) {
+                        let property = parseInt(localStorage.getItem(key) || '0');
+                        property++;
+                        localStorage.setItem(key, property.toString());
+
+                        boughtItems.forEach(btn => {
+                            if (btn.getAttribute('data-saved') === item.getAttribute('data-item-id')) {
+                                let itemCount = localStorage.getItem(btn.getAttribute('data-saved'));
+                                btn.innerHTML = btn.innerHTML.replace(/\d+/, itemCount);
+                            }
+                        });
                     }
 
                     item.style.backgroundColor = '#28591d';
