@@ -34,20 +34,27 @@ messageInput.addEventListener('input', () => {
 function fixRes() {
     if (window.matchMedia('(max-width: 600px)').matches) {
         if (!document.querySelector('.scene')) {
-            messageInput.removeAttribute('disabled');
-        } else {
             messageInput.setAttribute('disabled', '');
+        } else {
+            messageInput.removeAttribute('disabled');
         }
         messageZone.style.bottom = `${keyboard.offsetHeight}px`;
 
         keyboard.querySelectorAll('.key').forEach(key => {
+            if (messageInput.value.trim() != '') {
+                key.innerHTML = key.innerHTML.toLowerCase();
+            } else {
+                if (key.innerHTML.indexOf('backspace') != -1) return;
+                key.innerHTML = key.innerHTML.toUpperCase();
+            }
+
             if (!key.hasAttribute('data-click-listener-added')) {
                 key.addEventListener('click', () => {
                     if (messageInput.value == '') {
-                        if (/<.+>.+<\/.+>$/.test(key.innerHTML)) return;
+                        if (/<.+>backspace<\/.+>$/.test(key.innerHTML)) return;
                         messageInput.value += key.innerHTML.toUpperCase();
                     } else {
-                        if (/<.+>.+<\/.+>$/.test(key.innerHTML)) {
+                        if (/<.+>backspace<\/.+>$/.test(key.innerHTML)) {
                             messageInput.value = messageInput.value.slice(0, -1);
                         } else {
                             messageInput.value += key.innerHTML.toLowerCase();
@@ -121,17 +128,18 @@ let earnings = {
 }
 letterInfo.innerHTML = letterInfo.innerHTML.replace('?', chosenLetter);
 
-boughtItems.forEach(btn => {
-    let savedItemValue = localStorage.getItem(btn.getAttribute('data-saved'));
+window.addEventListener('DOMContentLoaded', (event) => {
+    boughtItems.forEach(btn => {
+        let savedItemValue = localStorage.getItem(btn.getAttribute('data-saved'));
 
-    if (savedItemValue !== null && !isNaN(savedItemValue)) {
-        btn.innerHTML = btn.innerHTML.replace('?', savedItemValue || '0');
-
-        btn.addEventListener('click', () => attachItemEventListener(btn));
-    } else {
-        localStorage.setItem(btn.getAttribute('data-saved'), '0');
-        btn.innerHTML = btn.innerHTML.replace('?', '0');
-    }
+        if (savedItemValue !== null && !isNaN(savedItemValue)) {
+            btn.innerHTML = btn.innerHTML.replace('?', savedItemValue || '0');
+            attachItemEventListener(btn);
+        } else {
+            localStorage.setItem(btn.getAttribute('data-saved'), '0');
+            btn.innerHTML = btn.innerHTML.replace('?', '0');
+        }
+    });
 });
 
 function attachItemEventListener(btn) {
@@ -203,6 +211,12 @@ function attachItemEventListener(btn) {
                     updateScore('bot', -5);
                     updateScore('player', 5);
                     playerScore >= MAX_SCORE ? winningScene('player') : undefined;
+                    break;
+                case 'freezeTimer':
+                    clearInterval(timerId);
+                    break;
+                case 'resetTimer':
+                    timer = defaultTimer;
                     break;
                 default:
                     sendNewMessage('An error occurred: Couldn\'t operate the item', true);
@@ -697,6 +711,13 @@ coinCounter.closest('.coins').addEventListener('click', () => {
                             break;
                         case 'steal-points':
                             updateProperty('steakPoints');
+                            break;
+                        case 'freeze-timer':
+                            updateProperty('freezeTimer');
+                            break;
+                        case 'reset-timer':
+                            updateProperty('resetTimer');
+                            break;
                         default:
                             alert('An error occurred: Purchase is not successful');
                     }

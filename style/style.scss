@@ -445,6 +445,18 @@ button {
     transition: transform 200ms;
 }
 
+.toast {
+    background-color: var(--second-background);
+    position: fixed;
+    box-shadow: 0 0 3px var(--transparent);
+    left: 50%;
+    bottom: 1in;
+    transform: translateX(-50%);
+    border-radius: var(--common-px);
+    padding: var(--common-px);
+    z-index: 10;
+}
+
 .fake-anchor {
     color: var(--text-color);
     font-weight: bold;

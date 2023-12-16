@@ -40,5 +40,19 @@
         "bought": "localStorage.getItem('stealPoints') || 0",
         "image": "./assets/steal-points.png",
         "price": 2200
+    },
+    {
+        "name": "Freeze Timer",
+        "description": "Freezes the timer for 5 seconds",
+        "bought": "localStorage.getItem('freezeTimer') || 0",
+        "image": "./assets/freeze-timer.png",
+        "price": 1700
+    },
+    {
+        "name": "Reset Timer",
+        "description": "Resets the timer",
+        "bought": "localStorage.getItem('resetTimer') || 0",
+        "image": "./assets/reset-timer.png",
+        "price": 1400
     }
 ]
