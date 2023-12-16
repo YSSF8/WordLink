@@ -33,5 +33,12 @@
         "bought": "localStorage.getItem('preferredLetter') || 0",
         "image": "./assets/preferred-letter.png",
         "price": 2700
+    },
+    {
+        "name": "Steal Points",
+        "description": "Steal 5 points from the competitor",
+        "bought": "localStorage.getItem('stealPoints') || 0",
+        "image": "./assets/steal-points.png",
+        "price": 2200
     }
 ]

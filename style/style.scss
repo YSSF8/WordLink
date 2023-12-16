@@ -438,6 +438,13 @@ button {
     }
 }
 
+.expand-icon {
+    position: relative;
+    top: calc(var(--common-px) / 1.3);
+    margin-top: -5px;
+    transition: transform 200ms;
+}
+
 .fake-anchor {
     color: var(--text-color);
     font-weight: bold;
@@ -471,6 +478,7 @@ button {
     .coins {
         top: 3.2rem;
         left: calc(var(--common-px) * 2.4);
+        max-width: 85px;
     }
 
     .keyboard {

@@ -7,6 +7,7 @@ const userMeterPercentage = userMeter.querySelector('.bar .percentage');
 const botMeter = document.querySelector('.bot-meter');
 const botMeterValue = botMeter.querySelector('.value');
 const botMeterPercentage = botMeter.querySelector('.bar .percentage');
+const meters = userMeter.closest('.meters');
 const time = document.querySelector('.time');
 const timePercentage = time.previousElementSibling;
 const currentDifficulty = document.querySelector('.current-difficulty');
@@ -19,7 +20,7 @@ const keyboard = document.querySelector('.keyboard');
 const boughtItems = document.querySelectorAll('.bought-items button');
 
 function fixMessageHistoryPadding() {
-    messageHistory.style.paddingTop = `${userMeter.closest('.meters').offsetHeight + 8}px`;
+    messageHistory.style.paddingTop = `${meters.offsetHeight + 8}px`;
     requestAnimationFrame(fixMessageHistoryPadding);
 }
 
@@ -30,9 +31,13 @@ messageInput.addEventListener('input', () => {
     messageInput.value = messageInput.value.replace(/[^a-zA-Zé]/, '').replace(/^./, match => match.toUpperCase());
 });
 
-function fixInputByRes() {
+function fixRes() {
     if (window.matchMedia('(max-width: 600px)').matches) {
-        messageInput.setAttribute('disabled', '');
+        if (!document.querySelector('.scene')) {
+            messageInput.removeAttribute('disabled');
+        } else {
+            messageInput.setAttribute('disabled', '');
+        }
         messageZone.style.bottom = `${keyboard.offsetHeight}px`;
 
         keyboard.querySelectorAll('.key').forEach(key => {
@@ -52,15 +57,50 @@ function fixInputByRes() {
                 key.setAttribute('data-click-listener-added', '');
             }
         });
+
+        let bought = [];
+        let boughtCreations = 0;
+        boughtItems.forEach(item => {
+            boughtCreations++;
+            bought.push(item);
+            item.remove();
+        });
+
+        const boughtItemsParent = meters.querySelector('.bought-items');
+        if (boughtCreations >= 1 && !document.querySelector('.expand-items')) {
+            const expandButton = document.createElement('button');
+            expandButton.role = 'button';
+            expandButton.classList.add('expand-items');
+            expandButton.innerHTML = 'Items <span class="material-symbols-outlined expand-icon">expand_more</span>';
+            meters.insertBefore(expandButton, boughtItemsParent);
+
+            const expandIcon = expandButton.querySelector('span');
+            let isExpanded = false;
+            expandButton.addEventListener('click', () => {
+                isExpanded = !isExpanded;
+
+                if (isExpanded) {
+                    expandIcon.style.transform = 'rotate(180deg)';
+                    for (let i in bought) {
+                        let clonedButton = bought[i].cloneNode(true);
+                        attachItemEventListener(clonedButton);
+                        boughtItemsParent.appendChild(clonedButton);
+                    }
+                } else {
+                    boughtItemsParent.innerHTML = '';
+                    expandIcon.style.transform = 'rotate(0)';
+                }
+            });
+        }
     } else {
         messageInput.removeAttribute('disabled');
         messageZone.style.bottom = '0';
     }
 
-    requestAnimationFrame(fixInputByRes);
+    requestAnimationFrame(fixRes);
 }
 
-fixInputByRes();
+fixRes();
 
 const MAX_SCORE = 70;
 let difficulty = 'medium';
@@ -87,132 +127,142 @@ boughtItems.forEach(btn => {
     if (savedItemValue !== null && !isNaN(savedItemValue)) {
         btn.innerHTML = btn.innerHTML.replace('?', savedItemValue || '0');
 
-        btn.addEventListener('click', () => {
-            let savedItem = parseInt(localStorage.getItem(btn.getAttribute('data-saved')));
-
-            if (savedItem > 0) {
-                savedItem--;
-                localStorage.setItem(btn.getAttribute('data-saved'), savedItem);
-                btn.innerHTML = btn.innerHTML.replace(/\d+/, savedItem);
-
-                switch (btn.getAttribute('data-saved')) {
-                    case 'hint':
-                        btn.setAttribute('disabled', '');
-                        hint(chosenLetter).then(hints => {
-                            const hintParent = document.createElement('div');
-                            hintParent.style.left = '50%';
-                            hintParent.style.transform = 'translateX(-50%)';
-                            hintParent.style.position = 'fixed';
-                            hintParent.style.width = 'max-content';
-                            document.body.appendChild(hintParent);
-
-                            for (let hint of hints) {
-                                const hintItem = document.createElement('button');
-                                hintItem.innerHTML = hint.replace(/^./, match => match.toUpperCase());
-                                hintItem.classList.add('hint');
-                                hintItem.role = 'button';
-                                hintItem.style.marginLeft = 'calc(var(--common-px) / 2.5)';
-                                hintParent.appendChild(hintItem);
-
-                                hintItem.addEventListener('click', () => {
-                                    messageInput.value = hintItem.innerHTML;
-                                    btn.removeAttribute('disabled');
-                                    hintParent.remove();
-                                    sendMessage.click();
-                                });
-                            }
-
-                            if (window.matchMedia('(max-width: 600px)').matches) {
-                                hintParent.style.bottom = `${(messageInput.getBoundingClientRect().height + (hintParent.offsetHeight / 2)) + keyboard.offsetHeight}px`;
-                            } else {
-                                hintParent.style.bottom = `${messageInput.getBoundingClientRect().height + (hintParent.offsetHeight / 2)}px`;
-                            }
-                        });
-                        break;
-                    case 'halfPoints':
-                        pointManager('/');
-                        break;
-                    case 'doublePoints':
-                        pointManager('*');
-                        break;
-                    case 'changeLetter':
-                        changeLetter(String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1)) + 65));
-                        break;
-                    case 'preferredLetter':
-                        let previousLetter = chosenLetter;
-                        let newLetter = prompt('Input your preferred letter').toUpperCase().trim();
-                        let firstLetter = newLetter.charAt(0);
-                        if (firstLetter.match(/[^a-zA-ZéÉ]/) || firstLetter.trim() == '') {
-                            alert('Input a correct character');
-                            incorrectLetter = previousLetter;
-                        } else {
-                            incorrectLetter = firstLetter;
-                        }
-                        changeLetter(incorrectLetter);
-                        break;
-                    default:
-                        sendNewMessage('An error occurred: Couldn\'t operate the item', true);
-                }
-            }
-
-            async function hint(beginning = '', retries = 3) {
-                while (retries) {
-                    try {
-                        let response = await fetch(`https://random-word-api.herokuapp.com/word?number=100&length=${Math.floor(Math.random() * (10 - 7 + 1)) + 7}`);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        clearInterval(timerId);
-                        let words = await response.json();
-                        let filteredWords = words.filter(word => word.toUpperCase().startsWith(beginning.toUpperCase()));
-                        if (filteredWords.length >= 3) {
-                            let promises = filteredWords.slice(0, 3).map(word => fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`));
-                            let responses = await Promise.all(promises);
-                            let hints = responses.filter(response => response.ok).map((response, index) => filteredWords[index]);
-                            if (hints.length >= 3) {
-                                startTimer();
-                                return hints;
-                            } else {
-                                return hint(beginning);
-                            }
-                        } else {
-                            return hint(beginning);
-                        }
-                    } catch (error) {
-                        if (error.message === 'net::ERR_NETWORK_CHANGED' && retries > 0) {
-                            retries--;
-                            console.log(`Retrying... Attempts left: ${retries}`);
-                        } else {
-                            sendNewMessage(`An error occurred: ${error.message}`, true);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            function pointManager(operator) {
-                if (operator == '/') {
-                    botScore = Math.floor(botScore / 2);
-                    botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
-                    botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
-                } else if (operator == '*') {
-                    playerScore = playerScore * 2;
-                    userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
-                    userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
-                    playerScore >= MAX_SCORE ? winningScene('player') : undefined;
-                }
-            }
-
-            function changeLetter(letter) {
-                chosenLetter = letter;
-                letterInfo.innerHTML = letterInfo.innerHTML.replace(/:\s.+/, `: ${chosenLetter}`);
-            }
-        });
+        btn.addEventListener('click', () => attachItemEventListener(btn));
     } else {
         localStorage.setItem(btn.getAttribute('data-saved'), '0');
         btn.innerHTML = btn.innerHTML.replace('?', '0');
     }
 });
+
+function attachItemEventListener(btn) {
+    btn.addEventListener('click', () => {
+        let savedItem = parseInt(localStorage.getItem(btn.getAttribute('data-saved')));
+
+        if (savedItem > 0) {
+            savedItem--;
+            localStorage.setItem(btn.getAttribute('data-saved'), savedItem);
+            btn.innerHTML = btn.innerHTML.replace(/\d+/, savedItem);
+
+            switch (btn.getAttribute('data-saved')) {
+                case 'hint':
+                    btn.setAttribute('disabled', '');
+                    hint(chosenLetter).then(hints => {
+                        const hintParent = document.createElement('div');
+                        hintParent.style.left = '50%';
+                        hintParent.style.transform = 'translateX(-50%)';
+                        hintParent.style.position = 'fixed';
+                        hintParent.style.width = 'max-content';
+                        document.body.appendChild(hintParent);
+
+                        for (let hint of hints) {
+                            const hintItem = document.createElement('button');
+                            hintItem.innerHTML = hint.replace(/^./, match => match.toUpperCase());
+                            hintItem.classList.add('hint');
+                            hintItem.role = 'button';
+                            hintItem.style.marginLeft = 'calc(var(--common-px) / 2.5)';
+                            hintParent.appendChild(hintItem);
+
+                            hintItem.addEventListener('click', () => {
+                                messageInput.value = hintItem.innerHTML;
+                                btn.removeAttribute('disabled');
+                                hintParent.remove();
+                                sendMessage.click();
+                            });
+                        }
+
+                        if (window.matchMedia('(max-width: 600px)').matches) {
+                            hintParent.style.bottom = `${(messageInput.getBoundingClientRect().height + (hintParent.offsetHeight / 2)) + keyboard.offsetHeight}px`;
+                        } else {
+                            hintParent.style.bottom = `${messageInput.getBoundingClientRect().height + (hintParent.offsetHeight / 2)}px`;
+                        }
+                    });
+                    break;
+                case 'halfPoints':
+                    pointManager('/');
+                    break;
+                case 'doublePoints':
+                    pointManager('*');
+                    break;
+                case 'changeLetter':
+                    changeLetter(String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1)) + 65));
+                    break;
+                case 'preferredLetter':
+                    let previousLetter = chosenLetter;
+                    let newLetter = prompt('Input your preferred letter').toUpperCase().trim();
+                    let firstLetter = newLetter.charAt(0);
+                    if (firstLetter.match(/[^a-zA-ZéÉ]/) || firstLetter.trim() == '') {
+                        alert('Input a correct character');
+                        incorrectLetter = previousLetter;
+                    } else {
+                        incorrectLetter = firstLetter;
+                    }
+                    changeLetter(incorrectLetter);
+                    break;
+                case 'stealPoints':
+                    if (botScore <= 0) return;
+                    updateScore('bot', -5);
+                    updateScore('player', 5);
+                    playerScore >= MAX_SCORE ? winningScene('player') : undefined;
+                    break;
+                default:
+                    sendNewMessage('An error occurred: Couldn\'t operate the item', true);
+            }
+        }
+
+        async function hint(beginning = '', retries = 3) {
+            while (retries) {
+                try {
+                    let response = await fetch(`https://random-word-api.herokuapp.com/word?number=100&length=${Math.floor(Math.random() * (11 - 8 + 1)) + 8}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    clearInterval(timerId);
+                    let words = await response.json();
+                    let filteredWords = words.filter(word => word.toUpperCase().startsWith(beginning.toUpperCase()));
+                    if (filteredWords.length >= 3) {
+                        let promises = filteredWords.slice(0, 3).map(word => fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`));
+                        let responses = await Promise.all(promises);
+                        let hints = responses.filter(response => response.ok).map((response, index) => filteredWords[index]);
+                        if (hints.length >= 3) {
+                            startTimer();
+                            return hints;
+                        } else {
+                            return hint(beginning);
+                        }
+                    } else {
+                        return hint(beginning);
+                    }
+                } catch (error) {
+                    if (error.message === 'net::ERR_NETWORK_CHANGED' && retries > 0) {
+                        retries--;
+                        console.log(`Retrying... Attempts left: ${retries}`);
+                    } else {
+                        sendNewMessage(`An error occurred: ${error.message}`, true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function pointManager(operator) {
+            if (operator == '/') {
+                botScore = Math.floor(botScore / 2);
+                botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
+                botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
+            } else if (operator == '*') {
+                playerScore *= 2;
+                userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
+                userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
+                playerScore >= MAX_SCORE ? winningScene('player') : undefined;
+            }
+        }
+
+        function changeLetter(letter) {
+            chosenLetter = letter;
+            letterInfo.innerHTML = letterInfo.innerHTML.replace(/:\s.+/, `: ${chosenLetter}`);
+        }
+    });
+}
 
 sendMessage.addEventListener('click', () => {
     let rotationLevel = 0;
@@ -272,9 +322,7 @@ sendMessage.addEventListener('click', () => {
             findWordStartingWith(lastLetter);
             smoothScroll();
             usedWords.push(messageInput.value.toLowerCase());
-            playerScore += messageInput.value.length;
-            userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
-            userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
+            updateScore();
             playerScore >= MAX_SCORE ? winningScene('player') : undefined;
 
             timeout = 0;
@@ -352,9 +400,7 @@ function findWordStartingWith(letter) {
 
                     sendNewMessage(word.replace(/^./, match => match.toUpperCase()), false, 'bot');
                     smoothScroll();
-                    botScore += word.length;
-                    botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
-                    botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
+                    updateScore('bot', word.length);
                     chosenLetter = word.charAt(word.length - 1).toUpperCase();
                     letterInfo.innerHTML = letterInfo.innerHTML.replace(/:\s.+/, `: ${chosenLetter}`);
                     usedWords.push(word.toLowerCase());
@@ -411,6 +457,20 @@ function smoothScroll() {
     });
 }
 
+function updateScore(agent = 'player', value = messageInput.value.length) {
+    if (agent == 'player') {
+        playerScore += value;
+        userMeterValue.innerHTML = playerScore < 10 ? `0${playerScore}` : playerScore;
+        userMeterPercentage.style.width = `${(playerScore / MAX_SCORE) * 100}%`;
+    } else if (agent == 'bot') {
+        botScore += value;
+        botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
+        botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
+    } else {
+        throw new Error('Unknown agent');
+    }
+}
+
 document.addEventListener('keyup', e => {
     if (e.key == 'Enter') sendMessage.click();
 });
@@ -443,7 +503,7 @@ function winningScene(agent = '') {
         <h3>Revive?</h3>
         <div class="revive-price">
             <img src="./assets/coin.png" height="30" draggable="false" alt="">
-            <div>250</div>
+            <div>1000</div>
         </div>
         <div class="revive-meter">
             <div class="bar"></div>
@@ -635,6 +695,8 @@ coinCounter.closest('.coins').addEventListener('click', () => {
                         case 'preferred-letter':
                             updateProperty('preferredLetter');
                             break;
+                        case 'steal-points':
+                            updateProperty('steakPoints');
                         default:
                             alert('An error occurred: Purchase is not successful');
                     }
