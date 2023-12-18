@@ -73,6 +73,13 @@ function fixRes() {
             item.remove();
         });
 
+        let combinedHeight = 0;
+        Array.from(meters.children).forEach(child => {
+            combinedHeight += child.offsetHeight;
+        });
+
+        meters.style.height = `calc(${combinedHeight}px + ${parseInt(getComputedStyle(document.documentElement).getPropertyValue('--common-px')) * 2}px)`;
+
         const boughtItemsParent = meters.querySelector('.bought-items');
         if (boughtCreations >= 1 && !document.querySelector('.expand-items')) {
             const expandButton = document.createElement('button');
@@ -94,8 +101,8 @@ function fixRes() {
                         boughtItemsParent.appendChild(clonedButton);
                     }
                 } else {
-                    boughtItemsParent.innerHTML = '';
                     expandIcon.style.transform = 'rotate(0)';
+                    boughtItemsParent.innerHTML = '';
                 }
             });
         }
@@ -128,7 +135,7 @@ let earnings = {
 }
 letterInfo.innerHTML = letterInfo.innerHTML.replace('?', chosenLetter);
 
-window.addEventListener('DOMContentLoaded', (event) => {
+window.addEventListener('DOMContentLoaded', () => {
     boughtItems.forEach(btn => {
         let savedItemValue = localStorage.getItem(btn.getAttribute('data-saved'));
 
@@ -234,7 +241,17 @@ function attachItemEventListener(btn) {
                     let words = await response.json();
                     let filteredWords = words.filter(word => word.toUpperCase().startsWith(beginning.toUpperCase()));
                     if (filteredWords.length >= 3) {
-                        let promises = filteredWords.slice(0, 3).map(word => fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`));
+                        let promises = filteredWords.slice(0, 3).map(async word => {
+                            let response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+                            if (!response.ok) {
+                                if (response.status === 404) {
+                                    console.log(`Word not found: ${word}`);
+                                } else {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                            }
+                            return response;
+                        });
                         let responses = await Promise.all(promises);
                         let hints = responses.filter(response => response.ok).map((response, index) => filteredWords[index]);
                         if (hints.length >= 3) {
@@ -693,34 +710,7 @@ coinCounter.closest('.coins').addEventListener('click', () => {
                     localStorage.setItem('coins', coins);
                     coinCounter.innerHTML = coins;
 
-                    switch (item.id) {
-                        case 'hint':
-                            updateProperty('hint');
-                            break;
-                        case 'half-points':
-                            updateProperty('halfPoints');
-                            break;
-                        case 'double-points':
-                            updateProperty('doublePoints');
-                            break;
-                        case 'change-letter':
-                            updateProperty('changeLetter');
-                            break;
-                        case 'preferred-letter':
-                            updateProperty('preferredLetter');
-                            break;
-                        case 'steal-points':
-                            updateProperty('steakPoints');
-                            break;
-                        case 'freeze-timer':
-                            updateProperty('freezeTimer');
-                            break;
-                        case 'reset-timer':
-                            updateProperty('resetTimer');
-                            break;
-                        default:
-                            alert('An error occurred: Purchase is not successful');
-                    }
+                    updateProperty(item.getAttribute('data-item-id'));
 
                     function updateProperty(key) {
                         let property = parseInt(localStorage.getItem(key) || '0');
@@ -742,7 +732,7 @@ coinCounter.closest('.coins').addEventListener('click', () => {
                 });
             });
         })
-        .catch(error => alert('An error occurred: ' + error.message));
+        .catch(error => alert(`An error occurred: ${error.message}`));
 
     store.querySelector('.close').addEventListener('click', () => {
         store.remove();

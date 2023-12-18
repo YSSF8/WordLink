@@ -64,6 +64,8 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--common-px);
   z-index: 1;
+  overflow: hidden;
+  transition: height 200ms;
 }
 .meters .stats {
   display: flex;
@@ -409,18 +411,6 @@ button:is(input):focus {
   top: calc(var(--common-px) / 1.3);
   margin-top: -5px;
   transition: transform 200ms;
-}
-
-.toast {
-  background-color: var(--second-background);
-  position: fixed;
-  box-shadow: 0 0 3px var(--transparent);
-  left: 50%;
-  bottom: 1in;
-  transform: translateX(-50%);
-  border-radius: var(--common-px);
-  padding: var(--common-px);
-  z-index: 10;
 }
 
 .fake-anchor {
