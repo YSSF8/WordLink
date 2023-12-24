@@ -33,9 +33,9 @@ body {
     padding: 0;
 }
 
-.coins {
+.coins,
+.rank {
     position: fixed;
-    left: var(--common-px);
     top: var(--common-px);
     border: 1px solid var(--border-color);
     border-radius: var(--common-px);
@@ -51,6 +51,14 @@ body {
 
     &:hover {
         opacity: .8;
+    }
+
+    &:is(.coins) {
+        left: var(--common-px);
+    }
+
+    &:is(.rank) {
+        right: var(--common-px);
     }
 }
 
@@ -358,7 +366,7 @@ button {
     }
 }
 
-.store {
+.window {
     position: fixed;
     left: 50%;
     top: 50%;
@@ -422,6 +430,28 @@ button {
             }
         }
 
+        .level {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            
+            &:not(&:last-child) {
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: calc(var(--common-px) / 2);
+            }
+
+            .level-id {
+                display: flex;
+                align-items: center;
+                gap: calc(var(--common-px) / 2);
+            }
+
+            .level-score {
+                display: flex;
+                align-items: center;
+            }
+        }
+
         &::-webkit-scrollbar-thumb {
             background-color: var(--first-background);
         }
@@ -456,6 +486,7 @@ button {
 
 ::-webkit-scrollbar {
     width: var(--common-px);
+    height: var(--common-px);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -477,10 +508,9 @@ button {
         }
     }
 
-    .coins {
+    .coins,
+    .rank {
         top: 3.2rem;
-        left: calc(var(--common-px) * 2.4);
-        max-width: 85px;
     }
 
     .keyboard {

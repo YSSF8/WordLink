@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Unranked",
+        "image": "./assets/rank/unranked.png",
+        "level": 0
+    },
+    {
+        "name": "Bronze",
+        "image": "./assets/rank/bronze.png",
+        "level": 5000
+    },
+    {
+        "name": "Silver",
+        "image": "./assets/rank/silver.png",
+        "level": 10000
+    },
+    {
+        "name": "Gold",
+        "image": "./assets/rank/gold.png",
+        "level": 20000
+    },
+    {
+        "name": "Platinum",
+        "image": "./assets/rank/platinum.png",
+        "level": 30000
+    },
+    {
+        "name": "Diamond",
+        "image": "./assets/rank/diamond.png",
+        "level": 50000
+    },
+    {
+        "name": "Master",
+        "image": "./assets/rank/master.png",
+        "level": 80000
+    },
+    {
+        "name": "Legend",
+        "image": "./assets/rank/legend.png",
+        "level": 100000
+    }
+]

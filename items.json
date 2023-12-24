@@ -43,7 +43,7 @@
     },
     {
         "name": "Freeze Timer",
-        "description": "Freezes the timer for 5 seconds",
+        "description": "Freezes the timer",
         "bought": "localStorage.getItem('freezeTimer') || 0",
         "image": "./assets/freeze-timer.png",
         "price": 1700

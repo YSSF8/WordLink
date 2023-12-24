@@ -16,6 +16,7 @@ const messageZone = messageInput.parentElement;
 const mainMenu = document.querySelector('.main-menu');
 const start = document.getElementById('start');
 const coinCounter = document.getElementById('coin-counter');
+const rankCounter = document.getElementById('rank-counter');
 const keyboard = document.querySelector('.keyboard');
 const boughtItems = document.querySelectorAll('.bought-items button');
 
@@ -39,6 +40,8 @@ function fixRes() {
             messageInput.removeAttribute('disabled');
         }
         messageZone.style.bottom = `${keyboard.offsetHeight}px`;
+        coinCounter.closest('.coins').style.left = `${meters.offsetLeft + 4}px`;
+        rankCounter.closest('.rank').style.right = `${meters.offsetLeft + 4}px`;
 
         keyboard.querySelectorAll('.key').forEach(key => {
             if (messageInput.value.trim() != '') {
@@ -109,6 +112,8 @@ function fixRes() {
     } else {
         messageInput.removeAttribute('disabled');
         messageZone.style.bottom = '0';
+        coinCounter.closest('.coins').style.removeProperty('left');
+        rankCounter.closest('.rank').style.removeProperty('right');
     }
 
     requestAnimationFrame(fixRes);
@@ -126,12 +131,19 @@ let timeout = 3;
 let usedWords = [];
 let timerId;
 let coins = parseInt(localStorage.getItem('coins')) || 0;
+let rank = parseInt(localStorage.getItem('rank')) || 0;
 let chosenLetter = String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1)) + 65);
 let earnings = {
     easy: 100,
     medium: 500,
     hard: 1000,
     expert: 2000
+}
+let ranking = {
+    easy: 300,
+    medium: 600,
+    hard: 900,
+    expert: 1800
 }
 letterInfo.innerHTML = letterInfo.innerHTML.replace('?', chosenLetter);
 
@@ -522,7 +534,7 @@ function winningScene(agent = '') {
     const won = document.createElement('div');
     won.innerHTML = `
     <h2>${agent == 'player' ? 'You' : 'The bot has'} won!</h2>
-    ${agent == 'player' ? `<div>Reward: +${difficulty == 'easy' ? earnings.easy : (difficulty == 'hard' ? earnings.hard : (difficulty == 'expert' ? earnings.expert : earnings.medium))} coins</div>` : ''}
+    ${agent == 'player' ? `<div>Reward: +${earnings[difficulty].toLocaleString()} coins; +${ranking[difficulty].toLocaleString()} points</div>` : `<div>Sanctions: -${ranking[difficulty].toLocaleString()} points</div>`}
     <div ${agent == 'player' ? 'style="margin-bottom: var(--common-px);"' : ''}>Winner's score: ${agent == 'player' ? playerScore : botScore}</div>
     ${agent == 'bot' ? `<div style="margin-bottom: var(--common-px);">Your score: ${playerScore}</div>` : ''}
     <div class="scene-buttons">
@@ -546,28 +558,29 @@ function winningScene(agent = '') {
     won.classList.add('scene');
     document.body.appendChild(won);
 
-    if (agent == 'player') {
-        switch (difficulty) {
-            case 'easy':
-                coins += earnings.easy;
-                localStorage.setItem('coins', coins);
-                coinCounter.innerHTML = coins;
-                break;
-            case 'hard':
-                coins += earnings.hard;
-                localStorage.setItem('coins', coins);
-                coinCounter.innerHTML = coins;
-                break;
-            case 'expert':
-                coins += earnings.expert;
-                localStorage.setItem('coins', coins);
-                coinCounter.innerHTML = coins;
-                break;
-            default:
-                coins += earnings.medium;
-                localStorage.setItem('coins', coins);
-                coinCounter.innerHTML = coins;
-        }
+    switch (difficulty) {
+        case 'easy':
+            rewards('easy');
+            break;
+        case 'hard':
+            rewards('hard');
+            break;
+        case 'expert':
+            rewards('expert');
+            break;
+        default:
+            rewards('medium');
+    }
+
+    function rewards(diff = 'medium') {
+        coins += earnings[diff];
+        localStorage.setItem('coins', coins);
+        coinCounter.innerHTML = coins;
+
+        agent == 'player' ? rank += ranking[diff] : (rank > 0 ? rank -= ranking[diff] : undefined);
+        localStorage.setItem('rank', rank);
+        rankCounter.innerHTML = rank;
+        updateRank();
     }
 
     won.querySelector('.replay').addEventListener('click', () => {
@@ -591,7 +604,7 @@ function winningScene(agent = '') {
             timer = defaultTimer;
             startTimer();
             boughtItems.forEach(btn => btn.removeAttribute('disabled'));
-            botScore -= Math.floor(MAX_SCORE / 2);
+            botScore -= 15;
             botMeterValue.innerHTML = botScore < 10 ? `0${botScore}` : botScore;
             botMeterPercentage.style.width = `${(botScore / MAX_SCORE) * 100}%`;
             coins -= price;
@@ -655,14 +668,14 @@ if (localStorage.getItem('replay')) {
     localStorage.removeItem('replay');
 }
 
-let openedStores = 0;
+let openedWindows = 0;
 
 coinCounter.closest('.coins').addEventListener('click', () => {
-    openedStores++;
-    if (openedStores > 1) return;
+    openedWindows++;
+    if (openedWindows > 1) return;
 
     const store = document.createElement('div');
-    store.classList.add('store');
+    store.classList.add('window', 'store');
     document.body.appendChild(store);
 
     store.innerHTML = `
@@ -736,9 +749,82 @@ coinCounter.closest('.coins').addEventListener('click', () => {
 
     store.querySelector('.close').addEventListener('click', () => {
         store.remove();
-        openedStores = 0;
+        openedWindows = 0;
     });
 });
+
+rankCounter.closest('.rank').addEventListener('click', () => {
+    openedWindows++;
+    if (openedWindows > 1) return;
+
+    const ranks = document.createElement('div');
+    ranks.classList.add('window', 'ranking');
+    document.body.appendChild(ranks);
+
+    ranks.innerHTML = `
+    <div class="header">
+        <div class="title">
+            <img src="" height="25" draggable="false" alt="">
+            <div>Ranks (${rank.toLocaleString()})</div>
+        </div>
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <div class="content"></div>
+    `;
+
+    const content = ranks.querySelector('.content');
+
+    let ranksHTML = '';
+    playerRank().then(r => {
+        for (let i in r) {
+            ranksHTML += `
+            <div class="level">
+                <div class="level-id">
+                    <img src="${r[i].image}" height="30" draggable="false" alt="">
+                    <div class="current-level">${r[i].name}</div>
+                </div>
+                <div class="level-score">${r[i].level.toLocaleString()}</div>
+            </div>
+            `;
+        }
+        content.innerHTML = ranksHTML;
+    });
+
+    ranks.querySelector('.close').addEventListener('click', () => {
+        ranks.remove();
+        openedWindows = 0;
+    });
+});
+
+async function playerRank() {
+    let ranks = await fetch('./ranks.json');
+    let response = await ranks.json();
+
+    return response;
+}
+
+function updateRank() {
+    playerRank().then(r => {
+        r = r.reverse();
+        for (let i in r) {
+            if (rank >= r[i].level) {
+                rankCounter.previousElementSibling.src = r[i].image;
+                rankCounter.innerHTML = rank;
+                const ranking = document.querySelector('.ranking');
+                if (ranking) {
+                    ranking.querySelector('.title img').src = r[i].image;
+                }
+                break;
+            }
+        }
+    });
+
+    requestAnimationFrame(updateRank);
+}
+
+updateRank();
 
 function startTimer() {
     timerId = setInterval(() => {
