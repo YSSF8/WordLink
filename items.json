@@ -3,56 +3,56 @@
         "name": "Hint",
         "description": "Receive a hint whenever you encounter difficulties",
         "bought": "localStorage.getItem('hint') || 0",
-        "image": "./assets/hint.png",
+        "image": "./assets/store/hint.png",
         "price": 200
     },
     {
         "name": "Half Points",
         "description": "Shifts the competitor's points to their own half",
         "bought": "localStorage.getItem('halfPoints') || 0",
-        "image": "./assets/half-points.png",
+        "image": "./assets/store/half-points.png",
         "price": 3000
     },
     {
         "name": "Double Points",
         "description": "Increase your earned points twofold",
         "bought": "localStorage.getItem('doublePoints') || 0",
-        "image": "./assets/double-points.png",
+        "image": "./assets/store/double-points.png",
         "price": 5000
     },
     {
         "name": "Change Letter",
         "description": "Swap the letter by another random letter",
         "bought": "localStorage.getItem('changeLetter') || 0",
-        "image": "./assets/change-letter.png",
+        "image": "./assets/store/change-letter.png",
         "price": 2400
     },
     {
         "name": "Preferred Letter",
         "description": "Swap the letter by a preferred letter",
         "bought": "localStorage.getItem('preferredLetter') || 0",
-        "image": "./assets/preferred-letter.png",
+        "image": "./assets/store/preferred-letter.png",
         "price": 2700
     },
     {
         "name": "Steal Points",
         "description": "Steal 5 points from the competitor",
         "bought": "localStorage.getItem('stealPoints') || 0",
-        "image": "./assets/steal-points.png",
+        "image": "./assets/store/steal-points.png",
         "price": 2200
     },
     {
         "name": "Freeze Timer",
         "description": "Freezes the timer",
         "bought": "localStorage.getItem('freezeTimer') || 0",
-        "image": "./assets/freeze-timer.png",
+        "image": "./assets/store/freeze-timer.png",
         "price": 1700
     },
     {
         "name": "Reset Timer",
         "description": "Resets the timer",
         "bought": "localStorage.getItem('resetTimer') || 0",
-        "image": "./assets/reset-timer.png",
+        "image": "./assets/store/reset-timer.png",
         "price": 1400
     }
 ]

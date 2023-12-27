@@ -33,6 +33,7 @@ body {
     padding: 0;
 }
 
+.profile,
 .coins,
 .rank {
     position: fixed;
@@ -53,7 +54,7 @@ body {
         opacity: .8;
     }
 
-    &:is(.coins) {
+    &:is(.profile) {
         left: var(--common-px);
     }
 
@@ -511,6 +512,10 @@ button {
     .coins,
     .rank {
         top: 3.2rem;
+    }
+
+    .profile {
+        top: 7.45rem;
     }
 
     .keyboard {

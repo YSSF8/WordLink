@@ -32,6 +32,7 @@ body {
   padding: 0;
 }
 
+.profile,
 .coins,
 .rank {
   position: fixed;
@@ -48,14 +49,17 @@ body {
   z-index: 4;
   transition: opacity 200ms;
 }
+.profile:hover,
 .coins:hover,
 .rank:hover {
   opacity: 0.8;
 }
-.coins:is(.coins),
-.rank:is(.coins) {
+.profile:is(.profile),
+.coins:is(.profile),
+.rank:is(.profile) {
   left: var(--common-px);
 }
+.profile:is(.rank),
 .coins:is(.rank),
 .rank:is(.rank) {
   right: var(--common-px);
@@ -471,6 +475,9 @@ button:is(input):focus {
   .coins,
   .rank {
     top: 3.2rem;
+  }
+  .profile {
+    top: 7.45rem;
   }
   .keyboard {
     display: grid;

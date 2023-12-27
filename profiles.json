@@ -1,0 +1,42 @@
+[
+    {
+        "name": "Default",
+        "price": 0,
+        "image": "./assets/profiles/default.png"
+    },
+    {
+        "name": "Gladiator",
+        "price": 20,
+        "image": "./assets/profiles/gladiator.png"
+    },
+    {
+        "name": "Dragon",
+        "price": 60,
+        "image": "./assets/profiles/dragon.png"
+    },
+    {
+        "name": "Wolf",
+        "price": 50,
+        "image": "./assets/profiles/wolf.png"
+    },
+    {
+        "name": "Elf",
+        "price": 25,
+        "image": "./assets/profiles/elf.png"
+    },
+    {
+        "name": "Samurai",
+        "price": 90,
+        "image": "./assets/profiles/samurai.png"
+    },
+    {
+        "name": "Pharaoh",
+        "price": 30,
+        "image": "./assets/profiles/pharaoh.png"
+    },
+    {
+        "name": "Ninja",
+        "price": 40,
+        "image": "./assets/profiles/ninja.png"
+    }
+]

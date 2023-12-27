@@ -17,6 +17,9 @@ const mainMenu = document.querySelector('.main-menu');
 const start = document.getElementById('start');
 const coinCounter = document.getElementById('coin-counter');
 const rankCounter = document.getElementById('rank-counter');
+const profiler = document.querySelector('.profile');
+const profileImage = profiler.querySelector('img');
+const profileName = document.getElementById('profile-name');
 const keyboard = document.querySelector('.keyboard');
 const boughtItems = document.querySelectorAll('.bought-items button');
 
@@ -32,6 +35,8 @@ messageInput.addEventListener('input', () => {
     messageInput.value = messageInput.value.replace(/[^a-zA-Zé]/, '').replace(/^./, match => match.toUpperCase());
 });
 
+coinCounter.closest('.coins').style.left = `${profiler.offsetLeft + profiler.offsetWidth + 2}px`;
+
 function fixRes() {
     if (window.matchMedia('(max-width: 600px)').matches) {
         if (!document.querySelector('.scene')) {
@@ -42,6 +47,7 @@ function fixRes() {
         messageZone.style.bottom = `${keyboard.offsetHeight}px`;
         coinCounter.closest('.coins').style.left = `${meters.offsetLeft + 4}px`;
         rankCounter.closest('.rank').style.right = `${meters.offsetLeft + 4}px`;
+        profiler.style.left = `${meters.offsetLeft + 4}px`;
 
         keyboard.querySelectorAll('.key').forEach(key => {
             if (messageInput.value.trim() != '') {
@@ -112,8 +118,9 @@ function fixRes() {
     } else {
         messageInput.removeAttribute('disabled');
         messageZone.style.bottom = '0';
-        coinCounter.closest('.coins').style.removeProperty('left');
+        coinCounter.closest('.coins').style.left = `${profiler.offsetLeft + profiler.offsetWidth + 2}px`;
         rankCounter.closest('.rank').style.removeProperty('right');
+        profiler.style.removeProperty('left');
     }
 
     requestAnimationFrame(fixRes);
@@ -132,6 +139,8 @@ let usedWords = [];
 let timerId;
 let coins = parseInt(localStorage.getItem('coins')) || 0;
 let rank = parseInt(localStorage.getItem('rank')) || 0;
+let ownedProfiles = JSON.parse(localStorage.getItem('profiles')) || ['Default'];
+let setProfile = localStorage.getItem('profile') || 'Default';
 let chosenLetter = String.fromCharCode(Math.floor(Math.random() * (90 - 65 + 1)) + 65);
 let earnings = {
     easy: 100,
@@ -159,6 +168,21 @@ window.addEventListener('DOMContentLoaded', () => {
             btn.innerHTML = btn.innerHTML.replace('?', '0');
         }
     });
+
+    const setProfile = localStorage.getItem('profile');
+
+    if (setProfile) {
+        fetch('./profiles.json')
+            .then(res => res.json())
+            .then(profiles => {
+                const profile = profiles.find(profile => profile.name === setProfile);
+
+                if (profile) {
+                    profileImage.src = profile.image;
+                    profileName.innerHTML = profile.name;
+                }
+            });
+    }
 });
 
 function attachItemEventListener(btn) {
@@ -669,6 +693,93 @@ if (localStorage.getItem('replay')) {
 }
 
 let openedWindows = 0;
+
+profiler.addEventListener('click', () => {
+    openedWindows++;
+    if (openedWindows > 1) return;
+
+    const profiler = document.createElement('div');
+    profiler.classList.add('window', 'profiler');
+    document.body.appendChild(profiler);
+
+    profiler.innerHTML = `
+    <div class="header">
+        <div class="title">
+            <img src="./assets/profiles/default.png" height="25" draggable="false" alt="">
+            <div>Profiles</div>
+        </div>
+        <div class="close">
+            <span class="material-symbols-outlined">close</span>
+        </div>
+    </div>
+    <div class="content"></div>
+    `;
+
+    const content = profiler.querySelector('.content');
+
+    fetch('./profiles.json')
+        .then(res => res.json())
+        .then(profiles => {
+            let profileHTML = '';
+            for (let profile of profiles.sort((a, b) => a.price - b.price)) {
+                profileHTML += `
+            <div class="item" data-price="${profile.price}">
+                <img src="${profile.image}" height="120" draggable="false" alt="">
+                <div>${profile.name}</div>
+                <sup style="color: #d9d9d9;">${ownedProfiles.includes(profile.name) ? 'Owned' : '$' + profile.price}</sup>
+            </div>
+            `;
+            }
+            content.innerHTML = profileHTML;
+
+            content.querySelectorAll('.item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const itemName = item.querySelector('div').innerHTML;
+                    if (ownedProfiles.includes(itemName)) {
+                        setProfile = itemName;
+                        localStorage.setItem('profile', itemName);
+                        
+                        profileImage.src = item.querySelector('img').src;
+                        profileName.innerHTML = itemName;
+
+                        item.style.backgroundColor = '#28591d';
+                        setTimeout(() => {
+                            item.style.removeProperty('background-color');
+                        }, 500);
+                        return;
+                    }
+                    if (coins < parseInt(item.getAttribute('data-price'))) {
+                        item.style.backgroundColor = '#8d2d2d';
+                        setTimeout(() => {
+                            item.style.removeProperty('background-color');
+                        }, 500);
+                        return;
+                    }
+
+                    coins -= parseInt(item.getAttribute('data-price'));
+                    localStorage.setItem('coins', coins);
+                    coinCounter.innerHTML = coins;
+
+                    ownedProfiles.push(itemName);
+                    localStorage.setItem('profiles', JSON.stringify(ownedProfiles));
+                    item.querySelector('sup').innerHTML = 'Owned';
+
+                    profileImage.src = item.querySelector('img').src;
+                    profileName.innerHTML = itemName;
+
+                    item.style.backgroundColor = '#28591d';
+                    setTimeout(() => {
+                        item.style.removeProperty('background-color');
+                    }, 500);
+                });
+            });
+        });
+
+    profiler.querySelector('.close').addEventListener('click', () => {
+        openedWindows--;
+        profiler.remove();
+    });
+});
 
 coinCounter.closest('.coins').addEventListener('click', () => {
     openedWindows++;
