@@ -377,7 +377,7 @@ button {
     box-shadow: 0 0 6px 2px var(--transparent);
     overflow: hidden;
     animation: popup 200ms linear forwards;
-    z-index: 2;
+    z-index: 5;
 
     .header {
         display: flex;

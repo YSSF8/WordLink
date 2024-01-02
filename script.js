@@ -893,7 +893,7 @@ rankCounter.closest('.rank').addEventListener('click', () => {
             ranksHTML += `
             <div class="level">
                 <div class="level-id">
-                    <img src="${r[i].image}" height="30" draggable="false" alt="">
+                    <img src="${r[i].image}" height="40" draggable="false" alt="">
                     <div class="current-level">${r[i].name}</div>
                 </div>
                 <div class="level-score">${r[i].level.toLocaleString()}</div>

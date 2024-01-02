@@ -38,5 +38,10 @@
         "name": "Legend",
         "image": "./assets/rank/legend.png",
         "level": 100000
+    },
+    {
+        "name": "Mythical",
+        "image": "./assets/rank/mythical.png",
+        "level": 150000
     }
 ]
