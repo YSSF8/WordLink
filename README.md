@@ -11,14 +11,16 @@ You can play the game by clicking [here](https://yssf8.github.io/WordLink).
 - Timer for each turn
 - Different difficulty levels: Easy, Medium, Hard, Expert
 - Score tracking
-- Replayability
+- Store where you can buy items that are useful
+- Ranking system
+- Profiles or avatars you can buy
 
 ## How to Play
 1. Start by selecting your preferred difficulty level.
 2. A letter will be provided to you. Your task is to come up with a word that begins with this letter.
 3. The bot will respond with a word that begins with the last letter of your word.
 4. This back-and-forth continues until the timer runs out. Your score is determined by the length of the word you write. For instance, if you write "Hello", you earn 5 points.
-5. The first player to accumulate 50 points wins the game.
+5. The first player to accumulate 70 points wins the game.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
